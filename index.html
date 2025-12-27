@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Grace!</title>
+    
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Fredoka+One&family=Nunito:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 1. RESET & VARIABLES --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-color: #FFF5E1;
+            --cake-brown: #5D4037;
+            --icing-pink: #F48FB1;
+            --candle-blue: #90CAF9;
+            --book-cover: #8D6E63;
+            --book-spine: #5D4037;
+            --page-bg: #FFF8E1;
+            --neon-blue: #00E5FF;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#FFE0B2 10%, transparent 10%);
+            background-size: 30px 30px;
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--cake-brown);
+            transition: background 2s ease-in-out;
+        }
+
+        .container {
+            position: relative;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 10;
+            /* Agar transisi layout halus jika ada elemen baru muncul */
+            transition: all 1s ease;
+        }
+
+        /* --- SCENE 1: CAKE --- */
+        .cake-stage { 
+            position: relative; 
+            width: 250px; height: 250px; 
+            /* Margin bottom memberi ruang agar kue tidak perlu geser saat tombol muncul */
+            margin-bottom: 30px; 
+            transition: transform 1s ease, opacity 1s ease; 
+        }
+        
+        .plate { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) scale(0); width: 260px; height: 15px; background: #CFD8DC; border-radius: 10px; animation: slideUpPlate 0.8s forwards 0.5s; box-shadow: 0 5px 10px rgba(0,0,0,0.1); }
+        .cake-body { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%) translateY(-200px); width: 200px; height: 120px; background: var(--cake-brown); border-radius: 15px 15px 5px 5px; opacity: 0; overflow: hidden; animation: dropCake 0.8s forwards 1.2s; box-shadow: inset -5px 0 10px rgba(0,0,0,0.2); }
+        .cake-body::after { content: ''; position: absolute; top: 50%; width: 100%; height: 10px; background: rgba(0,0,0,0.1); }
+        .icing { position: absolute; top: 115px; left: 50%; margin-left: -105px; width: 210px; height: 60px; opacity: 0; animation: dripIcing 1s forwards 2s; }
+        .icing-top { width: 100%; height: 40px; background: var(--icing-pink); border-radius: 20px 20px 0 0; box-shadow: inset 0 -5px 10px rgba(0,0,0,0.1); }
+        .drip { position: absolute; top: 30px; background: var(--icing-pink); width: 30px; height: 40px; border-radius: 0 0 20px 20px; }
+        .d1 { left: 10px; height: 35px; } .d2 { left: 50px; height: 50px; } .d3 { left: 90px; height: 30px; } .d4 { left: 130px; height: 45px; } .d5 { left: 170px; height: 25px; }
+        .cherry { position: absolute; width: 25px; height: 25px; background: #D32F2F; border-radius: 50%; top: 110px; opacity: 0; transform: scale(0); animation: popCherry 0.5s forwards; box-shadow: inset -3px -3px 5px rgba(0,0,0,0.3); }
+        .c1 { left: 60px; animation-delay: 2.8s; } .c2 { left: 112px; animation-delay: 3s; z-index: 2; } .c3 { left: 165px; animation-delay: 3.2s; }
+        .candle-container { position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%); width: 16px; height: 0; background: repeating-linear-gradient(45deg, var(--candle-blue), var(--candle-blue) 5px, #fff 5px, #fff 10px); border-radius: 4px; opacity: 0; animation: growCandle 1s forwards 3.5s; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+        .wick { position: absolute; top: -8px; left: 6px; width: 4px; height: 8px; background: #333; }
+        .flame { position: absolute; top: -30px; left: -2px; width: 20px; height: 30px; background: linear-gradient(#FFD54F, #FF6F00); border-radius: 50% 50% 20% 20%; opacity: 0; transform-origin: bottom center; animation: ignite 0.5s forwards 4.5s, flicker 1.5s infinite 5s; box-shadow: 0 0 10px #FFD54F; }
+
+        /* --- BUTTON GIFT --- */
+        #giftBtn {
+            display: none; 
+            margin-top: 10px; /* Jarak dari kue */
+            padding: 15px 30px; 
+            font-family: 'Fredoka One', cursive; 
+            font-size: 1.2rem; 
+            color: white; 
+            background: var(--icing-pink); 
+            border: none; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            box-shadow: 0 5px 0 #C2185B, 0 10px 20px rgba(0,0,0,0.2); 
+            z-index: 50; 
+            
+            /* State awal sebelum muncul */
+            opacity: 0;
+            transform: scale(0.5);
+            
+            /* Transisi halus saat muncul */
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        #giftBtn:active { 
+            transform: translateY(5px) scale(1) !important; 
+            box-shadow: 0 0 0 #C2185B, 0 5px 10px rgba(0,0,0,0.2); 
+        }
+
+        .bouncing-effect {
+            animation: bounceBtn 2s infinite;
+        }
+
+        /* --- SCENE 2: THE 3D MAGIC BOOK --- */
+        .book-scene {
+            display: none;
+            perspective: 2000px;
+            width: 320px; height: 420px;
+            position: relative; z-index: 20;
+        }
+
+        .book {
+            width: 100%; height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border-radius: 5px 15px 15px 5px;
+        }
+
+        .book::after {
+            content: ''; position: absolute; top: 5px; right: -10px; width: 10px; height: 98%;
+            background: repeating-linear-gradient(to right, #FFF8E1, #FFF8E1 1px, #E0E0E0 1px, #E0E0E0 2px);
+            border-radius: 0 5px 5px 0; z-index: 0; transform: translateZ(-2px);
+        }
+
+        .book-page {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+            transform-origin: left;
+            transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1), box-shadow 1.2s;
+            backface-visibility: hidden;
+            border-radius: 5px 15px 15px 5px;
+            background: linear-gradient(to right, #E0E0E0 0%, var(--page-bg) 5%, var(--page-bg) 95%, #E0E0E0 100%);
+            border-left: 8px solid var(--book-spine); 
+            box-shadow: inset -3px 0 10px rgba(0,0,0,0.05);
+        }
+
+        #bookCover { 
+            z-index: 3; color: white;
+            background: linear-gradient(to right, var(--book-spine) 0%, var(--book-cover) 5%, var(--book-cover) 98%, #5D4037 100%);
+            border-left: none;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+        }
+        #bookCover[style*="rotateY(-180deg)"] { box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
+
+        #page1 { z-index: 2; }
+        #page1[style*="rotateY(-180deg)"] { box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+        #page2 { z-index: 1; }
+
+        .photo-frame { width: 150px; height: 150px; border-radius: 50%; border: 5px solid var(--icing-pink); overflow: hidden; margin-bottom: 20px; position: relative; background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .birthday-hat { position: absolute; top: -45px; right: 65px; font-size: 3.5rem; animation: tiltHat 2s infinite ease-in-out; z-index: 20; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); }
+        .nav-btn { margin-top: 20px; padding: 10px 25px; background: var(--candle-blue); border: none; border-radius: 20px; color: white; font-family: 'Fredoka One'; cursor: pointer; box-shadow: 0 4px 0 #1976D2; transition: transform 0.1s; }
+        .nav-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* --- BALLOONS --- */
+        .balloons-container { position: fixed; bottom: -100px; width: 100%; height: 100%; pointer-events: none; z-index: 80; }
+        .balloon { position: absolute; bottom: -100px; width: 50px; height: 70px; border-radius: 50%; background: var(--icing-pink); opacity: 0.9; box-shadow: inset -5px -5px 10px rgba(0,0,0,0.1); }
+        .balloon::after { content: ''; position: absolute; bottom: -10px; left: 50%; width: 2px; height: 40px; background: rgba(0,0,0,0.2); }
+
+        /* --- SCENE 3: LUXURY FINALE (BLUE) --- */
+        #final-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1a0b14 0%, #000000 100%);
+            opacity: 0; pointer-events: none; z-index: 90;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 2s ease-out;
+            overflow: hidden;
+        }
+
+        .flower-container {
+            position: relative;
+            width: 300px; height: 500px;
+            display: flex; justify-content: center; align-items: flex-end;
+        }
+
+        #luxuryFlowerSVG { width: 100%; height: 100%; overflow: visible; }
+
+        .final-text {
+            font-family: 'Pacifico', cursive;
+            color: #fff;
+            font-size: 2rem;
+            margin-top: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px #29B6F6, 0 0 20px #0288D1;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: 0 0 10px white;
+        }
+
+        /* --- RAIN TEXT EFFECT --- */
+        .text-rain {
+            position: fixed;
+            top: -50px;
+            color: var(--icing-pink);
+            font-family: 'Dancing Script', cursive;
+            font-size: 1rem;
+            opacity: 0.6;
+            z-index: 15;
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        @keyframes fallText {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            100% { transform: translateY(110vh) rotate(10deg); opacity: 0; }
+        }
+
+        /* KEYFRAMES */
+        @keyframes slideUpPlate { from { transform: translateX(-50%) translateY(50px) scale(0.5); opacity: 0; } to { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; } }
+        @keyframes dropCake { 0% { transform: translateX(-50%) translateY(-200px); opacity: 0; } 60% { transform: translateX(-50%) translateY(10px); opacity: 1; } 100% { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        @keyframes dripIcing { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popCherry { to { opacity: 1; transform: scale(1); } }
+        @keyframes growCandle { from { height: 0; opacity: 0; } to { height: 60px; opacity: 1; } }
+        @keyframes ignite { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes flicker { 0%, 100% { transform: scale(1) rotate(-3deg); } 50% { transform: scale(0.9) rotate(3deg); } }
+        @keyframes bounceBtn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes tiltHat { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } }
+        @keyframes floatUp { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-120vh) rotate(20deg); } }
+        
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="musik.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="start-screen" style="position:fixed; width:100%; height:100%; background:var(--bg-color); z-index:999; display:flex; justify-content:center; align-items:center;">
+        <button onclick="startParty()" style="padding:15px 30px; font-size:1.5rem; background:var(--cake-brown); color:white; border:none; border-radius:30px; cursor:pointer; font-family:'Fredoka One'; box-shadow: 0 5px 0 #3E2723;">🎁 Ayo buka</button>
+    </div>
+
+    <div class="container">
+        <div id="cakeSection" class="cake-stage" style="opacity:0;">
+            <div class="plate"></div>
+            <div class="cake-body"></div>
+            <div class="icing">
+                <div class="icing-top"></div>
+                <div class="drip d1"></div> <div class="drip d2"></div> <div class="drip d3"></div> <div class="drip d4"></div> <div class="drip d5"></div>
+            </div>
+            <div class="cherry c1"></div> <div class="cherry c2"></div> <div class="cherry c3"></div>
+            <div class="candle-container">
+                <div class="wick"></div>
+                <div class="flame"></div>
+            </div>
+        </div>
+
+        <button id="giftBtn" onclick="openBookScene()">🎁 Take Your Special Gift</button>
+
+        <div id="bookContainer" class="book-scene">
+            <div class="book">
+                
+                <div class="book-page" id="bookCover" onclick="openBook()">
+                    <h1 style="font-family:'Pacifico'; font-size:2.5rem;">For Grace</h1>
+                    <p style="margin-top:10px">Click to Open</p>
+                </div>
+
+                <div class="book-page" id="page1">
+                    <p style="font-family:'Dancing Script', cursive; font-size:1.4rem; text-align:center; color:#4E342E; line-height:1.6;">
+                        <b style="font-size: 1.6rem;">HBD Nona</b><br><br>
+                        Tuhan Yesus berkati!<br>
+                        Panjang umur, sehat selalu, semoga impianmu terwujud.<br>
+                        Jangan pernah berhenti bermimpi dan berharap.<br>
+                        kamu spesial.
+                    </p>
+                    <button class="nav-btn" onclick="nextPage()">Next &rarr;</button>
+                </div>
+
+                <div class="book-page" id="page2">
+                    <div class="birthday-hat">🥳</div> 
+                    <div class="photo-frame">
+                        <img src="grace.jpeg" alt="Foto Grace">
+                    </div>
+                    <h2 style="font-family:'Pacifico'; color:var(--icing-pink); margin-top:10px;">Happy Birthday!</h2>
+                    <button class="nav-btn" style="background:var(--cake-brown); margin-top:15px;" onclick="finishScene()">Close Book &hearts;</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="balloons-container" id="balloons"></div>
+
+    <div id="final-overlay">
+        <div class="flower-container">
+            <svg id="luxuryFlowerSVG" viewBox="0 0 400 500">
+                <defs>
+                    <linearGradient id="stemGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                        <stop offset="0%" stop-color="#1B5E20" />
+                        <stop offset="50%" stop-color="#43A047" />
+                        <stop offset="100%" stop-color="#81C784" />
+                    </linearGradient>
+
+                    <radialGradient id="bluePetalGradient" cx="0.5" cy="0.5" r="0.5">
+                        <stop offset="0%" stop-color="#E1F5FE" /> 
+                        <stop offset="40%" stop-color="#29B6F6" /> 
+                        <stop offset="100%" stop-color="#01579B" /> 
+                    </radialGradient>
+
+                    <filter id="luxuryGlow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+
+                    <g id="flowerHeadProto">
+                        <g class="petals-back">
+                            <ellipse cx="0" cy="-40" rx="15" ry="45" fill="url(#bluePetalGradient)" transform="rotate(0)"/>
+                            <ellipse cx="0" cy="-40" rx="15" ry="45" fill="url(#bluePetalGradient)" transform="rotate(45)"/>
+                            <ellipse cx="0" cy="-40" rx="15" ry="45" fill="url(#bluePetalGradient)" transform="rotate(90)"/>
+                            <ellipse cx="0" cy="-40" rx="15" ry="45" fill="url(#bluePetalGradient)" transform="rotate(135)"/>
+                            <ellipse cx="0" cy="-40" rx="15" ry="45" fill="url(#bluePetalGradient)" transform="rotate(180)"/>
+                            <ellipse cx="0" cy="-40" rx="15" ry="45" fill="url(#bluePetalGradient)" transform="rotate(225)"/>
+                            <ellipse cx="0" cy="-40" rx="15" ry="45" fill="url(#bluePetalGradient)" transform="rotate(270)"/>
+                            <ellipse cx="0" cy="-40" rx="15" ry="45" fill="url(#bluePetalGradient)" transform="rotate(315)"/>
+                        </g>
+                        <g class="petals-front" opacity="0.9">
+                            <ellipse cx="0" cy="-30" rx="12" ry="35" fill="#4FC3F7" transform="rotate(22.5)"/>
+                            <ellipse cx="0" cy="-30" rx="12" ry="35" fill="#4FC3F7" transform="rotate(67.5)"/>
+                            <ellipse cx="0" cy="-30" rx="12" ry="35" fill="#4FC3F7" transform="rotate(112.5)"/>
+                            <ellipse cx="0" cy="-30" rx="12" ry="35" fill="#4FC3F7" transform="rotate(157.5)"/>
+                            <ellipse cx="0" cy="-30" rx="12" ry="35" fill="#4FC3F7" transform="rotate(202.5)"/>
+                            <ellipse cx="0" cy="-30" rx="12" ry="35" fill="#4FC3F7" transform="rotate(247.5)"/>
+                            <ellipse cx="0" cy="-30" rx="12" ry="35" fill="#4FC3F7" transform="rotate(292.5)"/>
+                            <ellipse cx="0" cy="-30" rx="12" ry="35" fill="#4FC3F7" transform="rotate(337.5)"/>
+                        </g>
+                        <circle cx="0" cy="0" r="12" fill="#FFF9C4" />
+                        <circle cx="0" cy="0" r="7" fill="#FFEE58" opacity="0.8" />
+                    </g>
+                </defs>
+
+                <g id="stemGroup" stroke-linecap="round" fill="none" stroke="url(#stemGradient)" stroke-width="4">
+                    <path class="flower-stem" d="M 200 500 Q 200 350 200 180" />
+                    <path class="flower-stem" d="M 190 500 Q 150 380 120 250" />
+                    <path class="flower-stem" d="M 210 500 Q 250 380 280 250" />
+
+                    <path class="leaf" d="M 200 350 Q 150 320 140 280" stroke-width="0" fill="#43A047" opacity="0" />
+                    <path class="leaf" d="M 200 300 Q 250 270 260 230" stroke-width="0" fill="#66BB6A" opacity="0" />
+                    <path class="leaf" d="M 140 300 Q 90 280 80 240" stroke-width="0" fill="#43A047" opacity="0" transform="scale(0.8)"/>
+                    <path class="leaf" d="M 260 300 Q 310 280 320 240" stroke-width="0" fill="#66BB6A" opacity="0" transform="scale(0.8) translate(50,0)"/>
+                </g>
+
+                <g filter="url(#luxuryGlow)">
+                    <use href="#flowerHeadProto" class="flower-head" transform="translate(200, 180) scale(0)" />
+                    <use href="#flowerHeadProto" class="flower-head" transform="translate(120, 250) scale(0)" />
+                    <use href="#flowerHeadProto" class="flower-head" transform="translate(280, 250) scale(0)" />
+                </g>
+            </svg>
+        </div>
+
+        <div class="final-text">
+            <p>May your life be as majestic<br>as these blue blooms.</p>
+            <p style="font-size: 1.2rem; margin-top: 10px; color: #B3E5FC;">Happiest Birthday, Grace! 💙</p>
+        </div>
+    </div>
+
+    <script>
+        function startParty() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('bgMusic').volume = 0.5;
+            document.getElementById('bgMusic').play().catch(e => console.log("Audio autoplay blocked"));
+            
+            const cakeSec = document.getElementById('cakeSection');
+            cakeSec.style.opacity = 1;
+            
+            setTimeout(() => {
+                const btn = document.getElementById('giftBtn');
+                
+                // 1. Tampilkan elemen (masih invisible karena opacity 0)
+                btn.style.display = 'block';
+                
+                // 2. Beri jeda sangat singkat agar browser merender display:block dulu
+                setTimeout(() => {
+                    // 3. Picu transisi (Muncul membesar & fade in)
+                    btn.style.opacity = "1";
+                    btn.style.transform = "scale(1)";
+                    
+                    // 4. Setelah transisi muncul selesai (0.8s), baru tambahkan animasi bounce
+                    setTimeout(() => {
+                        btn.classList.add('bouncing-effect');
+                    }, 800); 
+                    
+                }, 50);
+                
+            }, 6000); // Muncul setelah lilin menyala
+        }
+
+        function openBookScene() {
+            const cake = document.getElementById('cakeSection');
+            const btn = document.getElementById('giftBtn');
+            
+            // Sembunyikan kue dan tombol
+            cake.style.transform = "scale(0)";
+            cake.style.opacity = "0";
+            btn.style.display = "none";
+
+            // --- PANGGIL HUJAN DI SINI ---
+            createRain(); 
+
+            setTimeout(() => {
+                cake.style.display = "none";
+                const bookCon = document.getElementById('bookContainer');
+                bookCon.style.display = 'block';
+                bookCon.style.opacity = 0;
+                bookCon.style.transform = "translateY(50px)";
+                
+                setTimeout(() => {
+                    bookCon.style.transition = "all 1s ease";
+                    bookCon.style.opacity = 1;
+                    bookCon.style.transform = "translateY(0)";
+                }, 100);
+            }, 1000);
+        }
+
+        function openBook() {
+            document.getElementById('bookCover').style.transform = "rotateY(-180deg)";
+        }
+
+        function nextPage() {
+            const p1 = document.getElementById('page1');
+            p1.style.transform = "rotateY(-180deg)";
+            releaseBalloons();
+        }
+
+        function releaseBalloons() {
+            const container = document.getElementById('balloons');
+            const colors = ['#FFCDD2', '#F8BBD0', '#E1BEE7', '#D1C4E9', '#BBDEFB'];
+            
+            for(let i=0; i<20; i++) {
+                const b = document.createElement('div');
+                b.className = 'balloon';
+                b.style.left = Math.random() * 90 + '%';
+                b.style.background = colors[Math.floor(Math.random()*colors.length)];
+                b.style.animation = `floatUp ${Math.random()*3 + 4}s linear forwards`;
+                container.appendChild(b);
+            }
+        }
+
+        function createRain() {
+            const container = document.body;
+            const rainCount = 40; 
+
+            for(let i = 0; i < rainCount; i++) {
+                const div = document.createElement('div');
+                div.className = 'text-rain';
+                div.innerText = 'HBD'; // Teks singkat
+                
+                div.style.left = Math.random() * 100 + 'vw';
+                
+                const duration = Math.random() * 5 + 5;
+                
+                // PERBAIKAN: linear 1 forwards (sekali jalan)
+                div.style.animation = `fallText ${duration}s linear 1 forwards`;
+                div.style.animationDelay = Math.random() * 3 + 's';
+                div.style.fontSize = (Math.random() * 0.5 + 0.8) + 'rem';
+
+                container.appendChild(div);
+
+                // Hapus elemen setelah selesai animasi agar ringan
+                div.addEventListener('animationend', () => {
+                    div.remove();
+                });
+            }
+        }
+
+        function finishScene() {
+            const bookCon = document.getElementById('bookContainer');
+            bookCon.style.transition = "all 1.5s ease";
+            bookCon.style.opacity = 0;
+            bookCon.style.transform = "scale(0.8) translateY(50px)";
+            
+            const balloons = document.getElementById('balloons');
+            if(balloons) {
+                balloons.style.transition = "opacity 1s";
+                balloons.style.opacity = 0;
+            }
+
+            // Hapus sisa hujan jika masih ada
+            const rainDrops = document.querySelectorAll('.text-rain');
+            rainDrops.forEach(drop => {
+                drop.style.transition = "opacity 1s";
+                drop.style.opacity = 0; 
+                setTimeout(() => drop.remove(), 1000);
+            });
+
+            setTimeout(() => {
+                document.body.style.transition = "background-color 3s ease";
+                document.body.style.backgroundColor = "#000";
+                document.body.style.backgroundImage = "none";
+                
+                const overlay = document.getElementById('final-overlay');
+                overlay.style.opacity = 1;
+                overlay.style.pointerEvents = "auto";
+
+                animateLuxuryFlower();
+                createParticles();
+            }, 1000);
+        }
+
+        function animateLuxuryFlower() {
+            const tl = gsap.timeline();
+
+            const stems = document.querySelectorAll('.flower-stem');
+            
+            stems.forEach(stem => {
+                const stemLength = stem.getTotalLength();
+                gsap.set(stem, {
+                    strokeDasharray: stemLength,
+                    strokeDashoffset: stemLength
+                });
+            });
+
+            tl.to(stems, {
+                strokeDashoffset: 0,
+                duration: 3,
+                stagger: 0.2,
+                ease: "power2.inOut"
+            });
+
+            tl.to(".leaf", {
+                opacity: 1,
+                scale: 1,
+                duration: 1.5,
+                stagger: 0.1,
+                transformOrigin: "bottom left",
+                ease: "back.out(1.7)"
+            }, "-=2"); 
+
+            tl.to(".flower-head", {
+                scale: (i) => i === 0 ? 1.2 : 0.9, 
+                duration: 2,
+                stagger: 0.3,
+                ease: "elastic.out(1, 0.7)"
+            }, "-=1");
+
+            tl.from("#flowerHeadProto .petals-back ellipse", {
+                scale: 0,
+                transformOrigin: "50% 100%",
+                duration: 1.2,
+                stagger: 0.03,
+                ease: "back.out(1.2)"
+            }, "-=1.8");
+
+            tl.from("#flowerHeadProto .petals-front ellipse", {
+                scale: 0,
+                transformOrigin: "50% 100%",
+                duration: 1,
+                stagger: 0.03,
+                ease: "back.out(1.5)"
+            }, "-=1.2");
+
+            gsap.to(".flower-head", {
+                rotation: 5,
+                transformOrigin: "50% 50%", 
+                duration: 4,
+                repeat: -1,
+                yoyo: true,
+                stagger: {
+                    each: 0.5,
+                    from: "random"
+                },
+                ease: "sine.inOut"
+            });
+
+            tl.to(".final-text", {
+                opacity: 1,
+                y: 0,
+                duration: 2,
+                ease: "power2.out"
+            }, "-=1");
+        }
+
+        function createParticles() {
+            const overlay = document.getElementById('final-overlay');
+            const particleCount = 40; 
+
+            for (let i = 0; i < particleCount; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                
+                const size = Math.random() * 5 + 2;
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
+                p.style.left = `${Math.random() * 100}%`;
+                p.style.top = `${Math.random() * 100}%`;
+                
+                const colors = ['#FFF', '#FFF9C4', '#B3E5FC', '#4FC3F7'];
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.boxShadow = `0 0 ${Math.random() * 15 + 5}px ${p.style.background}, 0 0 20px #0288D1`;
+
+                overlay.appendChild(p);
+
+                gsap.to(p, {
+                    y: -150 - Math.random() * 250, 
+                    x: (Math.random() - 0.5) * 80, 
+                    opacity: [0, 1, 0],
+                    duration: 4 + Math.random() * 5,
+                    repeat: -1,
+                    ease: "sine.inOut",
+                    delay: Math.random() * 5
+                });
+            }
+        }
+    </script>
+</body>
+</html>
